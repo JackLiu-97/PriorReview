@@ -1,0 +1,36 @@
+{
+  "review_type": "illustrative_example",
+  "conference_style": "format_demonstration",
+  "paper_id": "sample_paper",
+  "title": "A Minimal Manuscript for Review-Workflow Demonstration",
+  "summary": "Hand-written format example for a synthetic manuscript about a single-worker task queue. This is not a model-generated review.",
+  "strengths": [
+    "The task states and processing order are explicitly described."
+  ],
+  "weaknesses": [
+    "The manuscript provides an evaluation plan but no measured results.",
+    "Concurrency and persistence failure handling are not specified."
+  ],
+  "questions": [
+    "How would the design prevent duplicate processing with multiple workers?"
+  ],
+  "required_clarifications": [],
+  "recommendation": "illustration_only",
+  "recommendation_rationale": "No publication decision is intended; this file demonstrates the schema.",
+  "supporting_arguments": [],
+  "additional_feedback": [
+    "All values in this example, including rating and confidence, are illustrative."
+  ],
+  "code_of_ethics": {
+    "potential_violation": false,
+    "explanation": null
+  },
+  "scores": {
+    "rating": 3,
+    "confidence": 2
+  },
+  "discussion_history_summary": "No agent discussion was run to create this example.",
+  "sc_meta_summary": "No score-calibration model was called.",
+  "evidence_refs": [],
+  "output_path": null
+}

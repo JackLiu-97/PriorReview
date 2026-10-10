@@ -1,0 +1,39 @@
+# Local credentials; the example is intentionally versioned.
+.env
+.env.*
+!.env.example
+
+# Python environments and generated files.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Inputs, historical priors, and generated review runs.
+data/
+outputs/
+results/
+*.log
+.priorreview_guard/
+.priorreview_guard_test/
+
+# Tool and editor state.
+.uv-cache/
+.uv-python/
+tmp/
+.agents/
+.claude/
+.codex/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.cfg
