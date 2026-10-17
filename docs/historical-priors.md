@@ -24,7 +24,7 @@ The SQL helper exposes four tables. Their detailed column descriptions are embed
 | `meta_reviews` | Meta-review text and associated decision information. | `paper_id` links to `papers.id`. |
 | `comments` | Author responses and discussion records. | `paper_id` links to `papers.id`; source note/reply fields preserve discussion relationships. |
 
-Use a database account restricted to read access to these resources. Runtime SQL helpers validate queries through [`SQLRepository`](../agent/core/sql_context.py), and SQL/RAG connections request read-only transactions. Autonomous scripts can also query through Python, so database account privileges remain the enforceable boundary. The finalizer's helper restricts tables to `papers` and `reviews`; its script instructions retain this evidence scope.
+Use a database account restricted to read access to these resources. Runtime SQL helpers validate queries through [`SQLRepository`](../agent/core/sql_context.py), and SQL/RAG connections request read-only transactions. Autonomous scripts can also query through Python, so database account privileges remain the enforceable boundary. The finalizer does not query the historical store; it formats the supplied review and summarizes the discussion history directly.
 
 ## Vector tables
 

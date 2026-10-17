@@ -477,6 +477,68 @@ class WorkflowSmokeTest(unittest.TestCase):
             sc_call = _capture_create_deep_agent.calls[2]
             self.assertEqual([spec["name"] for spec in sc_call["subagents"]], ["data_specialist"])
             self.assertNotIn("external_researcher", reviewer_call["system_prompt"])
+            self.assertFalse(runtime.finalizer_agent.use_data_subagent)
+            finalizer_call = _capture_create_deep_agent.calls[3]
+            self.assertNotIn("subagents", finalizer_call)
+            self.assertNotIn("Data specialist usage guide", finalizer_call["system_prompt"])
+            self.assertNotIn("assigned_data_workspace_abs", finalizer_call["system_prompt"])
+
+    def test_finalizer_writes_report_without_data_delegation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            sample_paper = Path(tmpdir) / "sample.md"
+            sample_paper.write_text("# Sample\n\nBody.", encoding="utf-8")
+            settings = Settings(
+                openai_api_key="test-key",
+                openai_model="test-model",
+                finalizer_openai_api_key="finalizer-test-key",
+                finalizer_openai_model="finalizer-test-model",
+                results_dir=tmpdir,
+                console_log_enabled=False,
+                reviewer_data_agent_enabled=False,
+                author_data_agent_enabled=False,
+                sc_data_agent_enabled=False,
+            )
+            with (
+                patch("agent.core.deep_agents.create_deep_agent", new=_capture_create_deep_agent),
+                patch(
+                    "agent.core.deep_agents.build_compiled_data_subagent",
+                    side_effect=AssertionError("Finalization must not build a data specialist"),
+                ),
+            ):
+                runtime = WorkflowRuntime(settings, sample_paper)
+
+            expected = FinalReviewReport(
+                paper_id="sample",
+                title="Sample",
+                summary="A study of retrieval-enhanced review.",
+                recommendation="Borderline Accept",
+                recommendation_rationale="The review supports this recommendation.",
+                scores={"rating": 6, "confidence": 3},
+            )
+            capture = _CapturingMessageOnlyAgent(expected.model_dump_json())
+            runtime.finalizer_agent.agent = capture
+            review = AgentRawResult(
+                role="reviewer", round_id=2, stage="revision_review",
+                content="Final review: borderline accept; rating 6; confidence 3.",
+            )
+            report = runtime.finalize_output(
+                parsed_paper=ParsedPaper(paper_id="sample", raw_markdown="# Sample\n\nBody."),
+                final_review=review,
+                discussion_history=[],
+            )
+
+            payload = json.loads(capture.state["messages"][0]["content"].removeprefix("Task payload:\n"))
+            self.assertEqual(payload["source_review_anchor"]["content"], review.content)
+            self.assertIn("discussion_history", payload)
+            self.assertNotIn("assigned_data_workspace", payload)
+            self.assertNotIn("assigned_data_workspace_abs", payload)
+            self.assertIsNone(capture.config)
+            self.assertFalse((runtime.run_dir / "artifacts" / "data").exists())
+            self.assertEqual(report.scores, expected.scores)
+            self.assertEqual(report.recommendation, expected.recommendation)
+            saved = FinalReviewReport.model_validate_json(Path(report.output_path).read_text(encoding="utf-8"))
+            self.assertEqual(saved, report)
+            self.assertTrue((runtime.run_dir / "artifacts" / "outputs" / "finalizer.md").exists())
 
     def test_role_data_agent_switches_disable_subagents_prompts_and_payloads(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -502,13 +564,12 @@ class WorkflowSmokeTest(unittest.TestCase):
             self.assertFalse(runtime.reviewer_agent.use_data_subagent)
             self.assertFalse(runtime.author_agent.use_data_subagent)
             self.assertFalse(runtime.sc_agent.use_data_subagent)
-            self.assertTrue(runtime.finalizer_agent.use_data_subagent)
+            self.assertFalse(runtime.finalizer_agent.use_data_subagent)
 
-            for call in _capture_create_deep_agent.calls[:3]:
+            for call in _capture_create_deep_agent.calls:
                 self.assertNotIn("subagents", call)
                 self.assertNotIn("Data Specialist Usage Guide", call["system_prompt"])
                 self.assertNotIn("assigned_data_workspace_abs", call["system_prompt"])
-            self.assertEqual([spec["name"] for spec in _capture_create_deep_agent.calls[3]["subagents"]], ["data_specialist"])
 
             parsed = ParsedPaper(paper_id="sample", raw_markdown="# Sample Retrieval Paper\n\nBody.")
             review = AgentRawResult(
@@ -1156,13 +1217,14 @@ class WorkflowSmokeTest(unittest.TestCase):
         self.assertIn("pass only compact context", sc_prompt)
         self.assertIn("Do not make the final SC decision", sc_prompt)
 
-        finalizer_prompt = build_main_agent_prompt("finalizer", use_data_subagent=True)
+        finalizer_prompt = build_main_agent_prompt("finalizer", use_data_subagent=False)
         self.assertIn("source_review_anchor", finalizer_prompt)
         self.assertIn("discussion_history", finalizer_prompt)
-        self.assertIn("Data specialist usage guide", finalizer_prompt)
-        self.assertIn("assigned_data_workspace_abs", finalizer_prompt)
-        self.assertIn("call `data_specialist` once", finalizer_prompt)
-        self.assertIn("style reference only", finalizer_prompt)
+        self.assertNotIn("Data specialist usage guide", finalizer_prompt)
+        self.assertNotIn("assigned_data_workspace_abs", finalizer_prompt)
+        self.assertNotIn("call `data_specialist` once", finalizer_prompt)
+        self.assertIn("using only the supplied payload", finalizer_prompt)
+        self.assertIn("Do not retrieve historical reviews, query SQL/RAG, or delegate data tasks", finalizer_prompt)
         self.assertIn("Do not change the recommendation, rating, or confidence", finalizer_prompt)
         self.assertIn("Public review style", finalizer_prompt)
         self.assertIn("natural official conference review", finalizer_prompt)

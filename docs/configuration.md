@@ -43,13 +43,13 @@ See [historical-priors.md](historical-priors.md) for the required table and fiel
 | `PRIORREVIEW_RESULTS_DIR` | `data/results` | Output root; overridden for one process by `--output-dir`. |
 | `PRIORREVIEW_CONSOLE_LOG` | `true` | Console event logging. |
 
-The three data-agent switches apply to their named roles. They are not a global database-disable switch. The current finalizer also uses SQL-based style guidance. Preserve the default round settings when comparing with the default workflow described in the manuscript.
+The three data-agent switches apply to their named roles. The finalizer directly formats the supplied final reviewer output and summarizes the discussion history, without a data specialist or SQL/RAG retrieval. Preserve the default round settings when comparing with the default workflow described in the manuscript.
 
 ## Autonomous data specialists
 
 | Variable | Default | Meaning |
 | --- | ---: | --- |
-| `PRIORREVIEW_DATA_AGENT_CODE_EXECUTION_ENABLED` | `true` | Add file browsing/reading/writing/search and local command execution to every enabled data specialist, including the finalizer's specialist. `false` retains only its fixed SQL/RAG/summary helpers. |
+| `PRIORREVIEW_DATA_AGENT_CODE_EXECUTION_ENABLED` | `true` | Add file browsing/reading/writing/search and local command execution to every enabled reviewer, author, or SC data specialist. `false` retains only its fixed SQL/RAG/summary helpers. |
 | `PRIORREVIEW_DATA_AGENT_COMMAND_TIMEOUT_SECONDS` | `120` | Default and maximum timeout for one command, from 1 to 3600 seconds. An individual command may request a shorter timeout. |
 | `PRIORREVIEW_DATA_AGENT_MAX_STEPS` | `100` | Graph step budget for one delegated data task, from 10 to 1000. Model and tool nodes each consume steps; this is not a SQL-query count. |
 

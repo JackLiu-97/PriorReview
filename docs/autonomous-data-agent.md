@@ -60,7 +60,7 @@ The SQL helper's 5,000-character preview and the RAG helper's short snippets rem
 
 ## Role scope and execution boundary
 
-Reviewer, author, and SC specialists may use their SQL/RAG resources for the assigned evidence task. The finalizer's specialist may write code and inspect results but should use only `papers` and `reviews` for review-writing style, preserving the source review's judgments. Its controlled SQL helper enforces that table scope, and no `run_rag_query` tool is exposed to it.
+Reviewer, author, and SC specialists may use their SQL/RAG resources for the assigned evidence task. The finalizer has no data specialist; it produces the final report directly from the supplied final reviewer output and discussion history without SQL/RAG retrieval.
 
 **Commands execute locally with the host user's privileges. This is not an OS sandbox.** Read-only reference mounts and directory checks apply to file tools; arbitrary shell/Python code can access other host paths or the network. Instructions require generated files to stay in the workspace and prohibit modifying the source database, project, environment, installing dependencies, or starting background services. Those instructions are not OS-level access controls. No approval prompt is added to the autonomous loop.
 

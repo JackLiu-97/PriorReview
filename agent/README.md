@@ -14,7 +14,7 @@ The review runtime uses LangGraph for routing and DeepAgents/LangChain for role 
 
 Data specialists can independently browse reference code and documentation, write Python/SQL analysis scripts, execute and debug them, inspect complete results, and summarize their findings. They have `ls`, `glob`, `grep`, `read_file`, `write_file`, `edit_file`, and `execute`, alongside `write_sql_artifact`, `run_sql_artifact`, `run_rag_query`, and `write_data_summary`. Each invocation binds the current run/role/round workspace from runtime configuration.
 
-The finalizer's specialist also has coding tools. Its evidence task remains style guidance from `papers` and `reviews`; its SQL helper enforces those tables and its RAG helper is absent. Arbitrary local code is governed by the operating-system and database account privileges, so helper checks are not a sandbox. Main role agents keep their existing tool restrictions. See [autonomous data analysis](../docs/autonomous-data-agent.md) for the execution model and examples.
+The finalizer has no data specialist and performs no SQL/RAG retrieval. It directly formats the final reviewer output into the public review and uses the supplied discussion history only for process summaries, preserving the final reviewer's recommendation, rating, and confidence. For the other roles' data specialists, arbitrary local code is governed by operating-system and database account privileges, so helper checks are not a sandbox. Main role agents keep their existing tool restrictions. See [autonomous data analysis](../docs/autonomous-data-agent.md) for the execution model and examples.
 
 ## Source map
 

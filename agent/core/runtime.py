@@ -79,7 +79,7 @@ class WorkflowRuntime:
             execution_log=self.execution_log,
             agent_name="finalizer",
             response_model=FinalReviewReport,
-            use_data_subagent=True,
+            use_data_subagent=False,
             openai_api_key=settings.finalizer_openai_api_key,
             openai_base_url=settings.finalizer_openai_base_url,
             openai_model=settings.finalizer_openai_model,
